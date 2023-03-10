@@ -6,11 +6,16 @@ typedef struct ListNodeType {
     int pid;
     int ppid;
     char comm[256];
-    char fd;
     char cmdline[512];
+    struct LinkedList *fd_list;
     struct ListNodeType *pLink;
-    struct LinkedListType *pLinkFD;
 } ListNode;
+
+typedef struct FDListNodeType {
+    int fd;
+    char fd_info[128];
+    struct FDListNodeType *pLinkFD;
+} FDListNode;
 
 
 typedef struct LinkedListType {
@@ -18,10 +23,19 @@ typedef struct LinkedListType {
   ListNode headerNode;
 } LinkedList;
 
+
+typedef struct FDLinkedListType {
+    int currentElementCount;
+    FDListNode headerNode;
+} FDLinkedList;
+
 LinkedList *createLinkedList(void);
+FDLinkedList *createFDLinkedList();
 int addLLElement(LinkedList *pList, int position, ListNode element);
+int addLLFDElement(FDLinkedList *pList, int position, FDListNode element);
 int removeLLElement(LinkedList *pList, int position);
 ListNode *getLLElement(LinkedList *pList, int position);
+FDListNode *getLLFDElement(FDLinkedList *pList, int position);
 
 void clearLinkedList(LinkedList *pList);
 int getLinkedListLength(LinkedList *pList);
@@ -34,6 +48,7 @@ void process_directory_processing(LinkedList *proc_list);
 void save_ppid_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_comm_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_cmdline_to_linked_list(char *path, LinkedList *proc_list, int index);
+void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index);
 
 
 
