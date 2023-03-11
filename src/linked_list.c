@@ -408,7 +408,6 @@ void save_fd_to_linked_list(char *path, int pid) {
     char line[350], port[60];
     int count = 0;
     int i = 0, j = 0;
-    bool flag = false;
     FDLinkedList *fd_list = NULL;
 
     fd_list = createFDLinkedList();
@@ -463,7 +462,6 @@ void find_fd_port_number(FDListNode* fd_node, int pid) {
     char cmd[32] = {0};
     char line[250] = {0};
     char* port;
-    int i = 0;
 
     sprintf(cmd, "lsof -np %d | grep %du", pid, fd_node->fd);
     fp = popen(cmd, "r");
