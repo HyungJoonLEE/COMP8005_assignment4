@@ -51,7 +51,7 @@ void save_ppid_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_comm_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_cmdline_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_fd_to_linked_list(char *path, int pid);
-bool find_fd_port_number(int fd_node, char* port, int pid);
+void find_fd_port_number(FDListNode* fd_node, int pid);
 
 
 
