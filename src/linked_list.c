@@ -493,10 +493,16 @@ void find_fd_port_number(FDListNode* fd_node, int pid) {
             port = strstr(line, "ROUTE");
             strcpy(fd_node->fd_info, port);
         }
+        if (strstr(line, "GENERIC")) {
+            port = strstr(line, "GENERIC");
+            strcpy(fd_node->fd_info, port);
+        }
         if (strstr(line, "type")) {
             port = strstr(line, "type");
             strcpy(fd_node->fd_info, port);
         }
+        else 
+            strcpy(fdnoce->fd_info, "[ SOCKET ]");
     }
     pclose(fp);
 }
