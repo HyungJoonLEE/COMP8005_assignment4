@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #define MAX_FILE_COUNT 1024
 #define BUF_LEN 32

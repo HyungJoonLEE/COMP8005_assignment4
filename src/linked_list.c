@@ -142,7 +142,7 @@ int removeLLFDElement(FDLinkedList *pList, int position) {
     FDListNode *pDelNode = NULL;
 
     if (pList != NULL) {
-        arrayCount = getLinkedListLength(pList);
+        arrayCount = getFDLinkedListLength(pList);
         if (position >= 0 && position < arrayCount) {
             pPreNode = &(pList->headerNode);
             for (int i = 0; i < position; i++) {
@@ -267,24 +267,6 @@ int isEmpty(LinkedList *pList) {
     return ret;
 }
 
-void displayLinkedList(LinkedList *pList) {
-    int j = 0;
-    if (pList != NULL) {
-        printf("Current number of process: %d\n", pList->currentElementCount);
-        for (int i = 20; i < 25; i++) {
-            printf("\n===============================================\n");
-            printf("Pid : %d\n", getLLElement(pList, i)->pid);
-            printf("PPid: %d\n", getLLElement(pList, i)->ppid);
-            printf("comm: %s\n", getLLElement(pList, i)->comm);
-            printf("cmdline: %s\n", getLLElement(pList, i)->cmdline);
-
-            printf("===============================================\n");
-        }
-    } else {
-        printf("No element\n");
-    }
-}
-
 
 void save_processes(LinkedList* proc_list) {
     FILE *fp = NULL;
@@ -333,7 +315,7 @@ void process_directory_processing(LinkedList *proc_list) {
         save_comm_to_linked_list(path, proc_list, i);
         save_cmdline_to_linked_list(path, proc_list, i);
         strcat(path, "fd/");
-        save_fd_to_linked_list(path, proc_list, i);
+        save_fd_to_linked_list(path, getLLElement(proc_list, i)->pid);
         puts("======================================================================================\n");
 
 
@@ -387,11 +369,11 @@ void save_comm_to_linked_list(char *path, LinkedList *proc_list, int index) {
             strcpy(getLLElement(proc_list, index)->comm, line);
         }
         pclose(fp);
+        printf("comm: %s\n", getLLElement(proc_list, index)->comm);
     }
     else {
         puts("comm - Directory doesn't exist");
     }
-    printf("comm: %s\n", getLLElement(proc_list, index)->comm);
 }
 
 
@@ -411,20 +393,21 @@ void save_cmdline_to_linked_list(char *path, LinkedList *proc_list, int index) {
             strcpy(getLLElement(proc_list, index)->cmdline, line);
         }
         pclose(fp);
+        printf("cmdline: %s\n", getLLElement(proc_list, index)->cmdline);
     }
     else {
         puts("cmdline - Directory doesn't exist");
     }
-    printf("cmdline: %s\n", getLLElement(proc_list, index)->cmdline);
 }
 
 
-void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index) {
+void save_fd_to_linked_list(char *path, int pid) {
     int result = 0;
     FILE *fp;
-    char line[256], buffer[256];
+    char line[350], port[60];
     int count = 0;
     int i = 0, j = 0;
+    bool flag = false;
     FDLinkedList *fd_list = NULL;
 
     fd_list = createFDLinkedList();
@@ -449,7 +432,13 @@ void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index) {
                     }
                     if (i == 9) {
 //                        printf("    token = %s\n", token);
-                        strcpy(fd_node.fd_info, token);
+                        if(strstr(token, "socket") != NULL) {
+                            flag = find_fd_port_number(fd_node.fd, port, pid);
+                            if (flag) strcpy(fd_node.fd_info, port);
+                            else strcpy(fd_node.fd_info, token);
+                        }
+                        else
+                            strcpy(fd_node.fd_info, token);
                     }
                     i++;
                 }
@@ -466,4 +455,39 @@ void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index) {
         printf("\tfd: %d\t->\t%s\n", getLLFDElement(fd_list, f)->fd, getLLFDElement(fd_list, f)->fd_info);
     }
     deleteFDLinkedList(fd_list);
+}
+
+
+bool find_fd_port_number(int fd_node, char* port, int pid) {
+    FILE *fp;
+    char cmd[32] = {0};
+    char line[350] = {0};
+    int i = 0;
+
+    sprintf(cmd, "lsof -np %d | grep %du", pid, fd_node);
+    fp = popen(cmd, "r");
+    if (fp == NULL) {
+        puts("find_fd_port_number() - Cannot execute: \"lsof -np {pid}\"");
+        exit(1);
+    }
+
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        char *token = strtok(line, " ");
+        while (i < 8) {
+            token = strtok(NULL, " ");
+            if (i == 6) {
+                if (strstr(line, "TCP") || strstr(line, "UDP")) continue;
+                else break;
+            }
+            if (i == 7) {
+                sprintf(port, "port = %s ", token);
+                token = strtok(NULL, " ");
+                strcat(port, token);
+                return true;
+            }
+            i++;
+        }
+        i = 0;
+    }
+    return false;
 }

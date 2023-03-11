@@ -43,7 +43,6 @@ int getLinkedListLength(LinkedList *pList);
 int getFDLinkedListLength(FDLinkedList *pList);
 void deleteLinkedList(LinkedList *pList);
 void deleteFDLinkedList(FDLinkedList *pList);
-void displayLinkedList(LinkedList *pList);
 
 void save_processes(LinkedList* proc_list);
 void save_pid_to_linked_list(LinkedList *proc_list, char *pid_str, int i, int pid);
@@ -51,7 +50,8 @@ void process_directory_processing(LinkedList *proc_list);
 void save_ppid_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_comm_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_cmdline_to_linked_list(char *path, LinkedList *proc_list, int index);
-void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index);
+void save_fd_to_linked_list(char *path, int pid);
+bool find_fd_port_number(int fd_node, char* port, int pid);
 
 
 
