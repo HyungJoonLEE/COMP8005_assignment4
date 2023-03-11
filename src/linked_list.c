@@ -285,17 +285,16 @@ void save_processes(LinkedList* proc_list) {
     }
 
     while(fgets(pid_str , sizeof(pid_str), fp) != NULL) {
-        save_pid_to_linked_list(proc_list, pid_str, i, pid);
+        save_pid_to_linked_list(proc_list, pid_str, i);
         i++;
     }
     pclose(fp);
 }
 
 
-void save_pid_to_linked_list(LinkedList *proc_list, char *pid_str, int i, int pid) {
+void save_pid_to_linked_list(LinkedList *proc_list, char *pid_str, int i) {
     ListNode proc = {0};
-    pid = atoi(pid_str);
-    proc.pid = pid;
+    proc.pid = atoi(pid_str);
     addLLElement(proc_list, i, proc);
     memset(pid_str, 0, 10);
 }
