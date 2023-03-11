@@ -432,14 +432,13 @@ void save_fd_to_linked_list(char *path, int pid) {
                     }
                     if (i == 9) {
 //                        printf("    token = %s\n", token);
-                        if(strstr(token, "socket") != NULL) {
-                            flag = find_fd_port_number(fd_node.fd, port, pid);
-                            if (flag) strcpy(fd_node.fd_info, port);
-                            else strcpy(fd_node.fd_info, token);
+                        if(strstr(token, "socket")) {
+                            find_fd_port_number(&fd_node, pid);
                         }
                         else
                             strcpy(fd_node.fd_info, token);
                     }
+                    memset(port, 0, 60);
                     i++;
                 }
                 addLLFDElement(fd_list, j, fd_node);
@@ -458,13 +457,14 @@ void save_fd_to_linked_list(char *path, int pid) {
 }
 
 
-bool find_fd_port_number(int fd_node, char* port, int pid) {
+void find_fd_port_number(FDListNode* fd_node, int pid) {
     FILE *fp;
     char cmd[32] = {0};
-    char line[350] = {0};
+    char line[250] = {0};
+    char* port;
     int i = 0;
 
-    sprintf(cmd, "lsof -np %d | grep %du", pid, fd_node);
+    sprintf(cmd, "lsof -np %d | grep %du", pid, fd_node->fd);
     fp = popen(cmd, "r");
     if (fp == NULL) {
         puts("find_fd_port_number() - Cannot execute: \"lsof -np {pid}\"");
@@ -472,22 +472,19 @@ bool find_fd_port_number(int fd_node, char* port, int pid) {
     }
 
     while (fgets(line, sizeof(line), fp) != NULL) {
-        char *token = strtok(line, " ");
-        while (i < 8) {
-            token = strtok(NULL, " ");
-            if (i == 6) {
-                if (strstr(line, "TCP") || strstr(line, "UDP")) continue;
-                else break;
-            }
-            if (i == 7) {
-                sprintf(port, "port = %s ", token);
-                token = strtok(NULL, " ");
-                strcat(port, token);
-                return true;
-            }
-            i++;
+        line[strlen(line) - 1] = 0;
+        if (strstr(line, "TCP")) {
+            port = strstr(line, "TCP");
+            strcpy(fd_node->fd_info, port);
         }
-        i = 0;
+        if (strstr(line, "UDP")) {
+            port = strstr(line, "UDP");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "type")) {
+            port = strstr(line, "type");
+            strcpy(fd_node->fd_info, port);
+        }
     }
-    return false;
+    pclose(fp);
 }
