@@ -489,6 +489,10 @@ void find_fd_port_number(FDListNode* fd_node, int pid) {
             port = strstr(line, "KOBJECT_UEVENT");
             strcpy(fd_node->fd_info, port);
         }
+        if (strstr(line, "ROUTE")) {
+            port = strstr(line, "ROUTE");
+            strcpy(fd_node->fd_info, port);
+        }
         if (strstr(line, "type")) {
             port = strstr(line, "type");
             strcpy(fd_node->fd_info, port);
