@@ -307,6 +307,7 @@ void process_directory_processing(LinkedList *proc_list) {
         sprintf(path, "/proc/%d/", getLLElement(proc_list, i)->pid);
         DIR* dir = opendir(path);
         if (dir == NULL) {
+            break;
             fprintf(stderr, "Failed to open directory %s\n", path);
         }
 
