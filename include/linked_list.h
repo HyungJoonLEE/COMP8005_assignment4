@@ -7,7 +7,6 @@ typedef struct ListNodeType {
     int ppid;
     char comm[256];
     char cmdline[512];
-    struct LinkedList *fd_list;
     struct ListNodeType *pLink;
 } ListNode;
 
@@ -19,8 +18,8 @@ typedef struct FDListNodeType {
 
 
 typedef struct LinkedListType {
-  int currentElementCount;
-  ListNode headerNode;
+    int currentElementCount;
+    ListNode headerNode;
 } LinkedList;
 
 
@@ -30,16 +29,20 @@ typedef struct FDLinkedListType {
 } FDLinkedList;
 
 LinkedList *createLinkedList(void);
-FDLinkedList *createFDLinkedList();
+FDLinkedList *createFDLinkedList(void);
 int addLLElement(LinkedList *pList, int position, ListNode element);
 int addLLFDElement(FDLinkedList *pList, int position, FDListNode element);
 int removeLLElement(LinkedList *pList, int position);
+int removeLLFDElement(FDLinkedList *pList, int position);
 ListNode *getLLElement(LinkedList *pList, int position);
 FDListNode *getLLFDElement(FDLinkedList *pList, int position);
 
 void clearLinkedList(LinkedList *pList);
+void clearFDLinkedList(FDLinkedList *pList);
 int getLinkedListLength(LinkedList *pList);
+int getFDLinkedListLength(FDLinkedList *pList);
 void deleteLinkedList(LinkedList *pList);
+void deleteFDLinkedList(FDLinkedList *pList);
 void displayLinkedList(LinkedList *pList);
 
 void save_processes(LinkedList* proc_list);

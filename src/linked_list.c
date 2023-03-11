@@ -1,7 +1,7 @@
 #include "linked_list.h"
 
 
-LinkedList *createLinkedList() {
+LinkedList *createLinkedList(void) {
     LinkedList *pReturn = NULL;
 
     pReturn = (LinkedList *) malloc(sizeof(LinkedList));
@@ -17,7 +17,7 @@ LinkedList *createLinkedList() {
 }
 
 
-FDLinkedList *createFDLinkedList() {
+FDLinkedList *createFDLinkedList(void) {
     FDLinkedList *pReturn = NULL;
 
     pReturn = (FDLinkedList *) malloc(sizeof(FDLinkedList));
@@ -134,6 +134,37 @@ int removeLLElement(LinkedList *pList, int position) {
     return ret;
 }
 
+
+int removeLLFDElement(FDLinkedList *pList, int position) {
+    int ret = FALSE;
+    int arrayCount = 0;
+    FDListNode *pPreNode = NULL;
+    FDListNode *pDelNode = NULL;
+
+    if (pList != NULL) {
+        arrayCount = getLinkedListLength(pList);
+        if (position >= 0 && position < arrayCount) {
+            pPreNode = &(pList->headerNode);
+            for (int i = 0; i < position; i++) {
+                pPreNode = pPreNode->pLinkFD;
+            }
+
+            pDelNode = pPreNode->pLinkFD;
+            pPreNode->pLinkFD = pDelNode->pLinkFD;
+            free(pDelNode);
+
+            pList->currentElementCount--;
+
+            ret = TRUE;
+        } else {
+            printf("ERROR: [%d] Index out of rage: deleteLLElement()\n", position);
+        }
+    }
+
+    return ret;
+}
+
+
 ListNode *getLLElement(LinkedList *pList, int position) {
     ListNode *pReturn = NULL;
     ListNode *pNode = NULL;
@@ -169,12 +200,20 @@ FDListNode *getLLFDElement(FDLinkedList *pList, int position) {
 
 
 void deleteLinkedList(LinkedList *pList) {
-
     if (pList != NULL) {
         clearLinkedList(pList);
         free(pList);
     }
 }
+
+
+void deleteFDLinkedList(FDLinkedList *pList) {
+    if (pList != NULL) {
+        clearFDLinkedList(pList);
+        free(pList);
+    }
+}
+
 
 void clearLinkedList(LinkedList *pList) {
     if (pList != NULL) {
@@ -183,6 +222,16 @@ void clearLinkedList(LinkedList *pList) {
         }
     }
 }
+
+
+void clearFDLinkedList(FDLinkedList *pList) {
+    if (pList != NULL) {
+        if (pList->currentElementCount > 0) {
+            removeLLFDElement(pList, 0);
+        }
+    }
+}
+
 
 int getLinkedListLength(LinkedList *pList) {
     int ret = 0;
@@ -193,6 +242,18 @@ int getLinkedListLength(LinkedList *pList) {
 
     return ret;
 }
+
+
+int getFDLinkedListLength(FDLinkedList *pList) {
+    int ret = 0;
+
+    if (pList != NULL) {
+        ret = pList->currentElementCount;
+    }
+
+    return ret;
+}
+
 
 int isEmpty(LinkedList *pList) {
     int ret = FALSE;
@@ -210,18 +271,13 @@ void displayLinkedList(LinkedList *pList) {
     int j = 0;
     if (pList != NULL) {
         printf("Current number of process: %d\n", pList->currentElementCount);
-        for (int i = 0; i < pList->currentElementCount; i++) {
+        for (int i = 20; i < 25; i++) {
             printf("\n===============================================\n");
             printf("Pid : %d\n", getLLElement(pList, i)->pid);
             printf("PPid: %d\n", getLLElement(pList, i)->ppid);
             printf("comm: %s\n", getLLElement(pList, i)->comm);
             printf("cmdline: %s\n", getLLElement(pList, i)->cmdline);
-            while(getLLFDElement(getLLElement(pList, i)->fd_list, j)->pLinkFD != NULL) {
-                printf("\tfd: %d\t->\t%s\n", getLLFDElement((FDLinkedList *) getLLElement(pList, i)->fd_list, j)->fd,
-                       getLLFDElement((FDLinkedList *) getLLElement(pList, i)->fd_list, j)->fd_info);
-                j++;
-            }
-            j = 0;
+
             printf("===============================================\n");
         }
     } else {
@@ -272,11 +328,13 @@ void process_directory_processing(LinkedList *proc_list) {
             fprintf(stderr, "Failed to open directory %s\n", path);
         }
 
+        puts("======================================================================================");
         save_ppid_to_linked_list(path, proc_list, i);
         save_comm_to_linked_list(path, proc_list, i);
         save_cmdline_to_linked_list(path, proc_list, i);
         strcat(path, "fd/");
         save_fd_to_linked_list(path, proc_list, i);
+        puts("======================================================================================\n");
 
 
         closedir(dir);
@@ -305,8 +363,10 @@ void save_ppid_to_linked_list(char *path, LinkedList *proc_list, int index) {
         pclose(fp);
     }
     else {
-        puts("save_ppid_to_linked_list() - Directory doesn't exist");
+        puts("ppid - Doesn't exist");
     }
+    printf("Pid : %d\n", getLLElement(proc_list, index)->pid);
+    printf("PPid: %d\n", getLLElement(proc_list, index)->ppid);
 }
 
 
@@ -329,8 +389,9 @@ void save_comm_to_linked_list(char *path, LinkedList *proc_list, int index) {
         pclose(fp);
     }
     else {
-        puts("show_comm_to_linked_list() - Directory doesn't exist");
+        puts("comm - Directory doesn't exist");
     }
+    printf("comm: %s\n", getLLElement(proc_list, index)->comm);
 }
 
 
@@ -352,8 +413,9 @@ void save_cmdline_to_linked_list(char *path, LinkedList *proc_list, int index) {
         pclose(fp);
     }
     else {
-        printf("show_cmdline_to_linked_list() - Directory doesn't exist");
+        puts("cmdline - Directory doesn't exist");
     }
+    printf("cmdline: %s\n", getLLElement(proc_list, index)->cmdline);
 }
 
 
@@ -365,6 +427,7 @@ void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index) {
     int i = 0, j = 0;
     FDLinkedList *fd_list = NULL;
 
+    fd_list = createFDLinkedList();
     result = chdir(path);
     if (result == 0) {
         fp = popen("ls -al", "r");
@@ -372,10 +435,9 @@ void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index) {
             puts("save_fd_to_linked_list() - Cannot execute: \"ls -al\"");
             exit(1);
         }
-        fd_list = createFDLinkedList();
         while (fgets(line, sizeof(line), fp) != NULL) {
-            line[strlen(line) - 1] = 0;
             FDListNode fd_node = {0,};
+            line[strlen(line) - 1] = 0;
             if (count >= 3) {
 //                printf("line = %s\n", line);
                 char *token = strtok(line, " ");
@@ -388,16 +450,20 @@ void save_fd_to_linked_list(char *path, LinkedList *proc_list, int index) {
                     if (i == 9) {
 //                        printf("    token = %s\n", token);
                         strcpy(fd_node.fd_info, token);
-                        addLLFDElement(fd_list, j, fd_node);
                     }
                     i++;
                 }
-                getLLElement(proc_list, j)->fd_list = (struct LinkedList *) fd_list;
+                addLLFDElement(fd_list, j, fd_node);
                 j++;
                 i = 0;
             }
             count++;
         }
+        count = 0;
         pclose(fp);
     }
+    for (int f = 0; f < fd_list->currentElementCount; f++) {
+        printf("\tfd: %d\t->\t%s\n", getLLFDElement(fd_list, f)->fd, getLLFDElement(fd_list, f)->fd_info);
+    }
+    deleteFDLinkedList(fd_list);
 }
