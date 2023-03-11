@@ -46,7 +46,7 @@ void deleteFDLinkedList(FDLinkedList *pList);
 int isEmpty(LinkedList *pList);
 
 void save_processes(LinkedList* proc_list);
-void save_pid_to_linked_list(LinkedList *proc_list, char *pid_str, int i, int pid);
+void save_pid_to_linked_list(LinkedList *proc_list, char *pid_str, int i);
 void process_directory_processing(LinkedList *proc_list);
 void save_ppid_to_linked_list(char *path, LinkedList *proc_list, int index);
 void save_comm_to_linked_list(char *path, LinkedList *proc_list, int index);
