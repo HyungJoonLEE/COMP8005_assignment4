@@ -43,6 +43,7 @@ int getLinkedListLength(LinkedList *pList);
 int getFDLinkedListLength(FDLinkedList *pList);
 void deleteLinkedList(LinkedList *pList);
 void deleteFDLinkedList(FDLinkedList *pList);
+int isEmpty(LinkedList *pList);
 
 void save_processes(LinkedList* proc_list);
 void save_pid_to_linked_list(LinkedList *proc_list, char *pid_str, int i, int pid);
