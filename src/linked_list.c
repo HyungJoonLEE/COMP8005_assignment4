@@ -500,8 +500,6 @@ void find_fd_port_number(FDListNode* fd_node, int pid) {
             port = strstr(line, "type");
             strcpy(fd_node->fd_info, port);
         }
-        else 
-            strcpy(fd_node->fd_info, "[ SOCKET ]");
     }
     pclose(fp);
 }
