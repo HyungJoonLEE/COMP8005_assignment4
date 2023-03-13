@@ -277,7 +277,7 @@ void save_processes(LinkedList* proc_list) {
     int pid = 0;
 
 
-    sprintf(command, "sudo ps aux | grep -v PID | awk '{print $2}'", uid);
+    sprintf(command, "sudo -S ps aux | grep -v PID | awk '{print $2}'", uid);
     fp = popen(command, "r");
     if (fp == NULL) {
         printf("ERROR: saveUserProcesses() - Cannot execute command\n");
