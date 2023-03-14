@@ -277,7 +277,7 @@ void save_processes(LinkedList* proc_list) {
     int pid = 0;
 
 
-    sprintf(command, "sudo -S ps aux | grep -v PID | awk '{print $2}'", uid);
+    sprintf(command, "sudo ps aux | grep -v PID | awk '{print $2}'", uid);
     fp = popen(command, "r");
     if (fp == NULL) {
         printf("ERROR: saveUserProcesses() - Cannot execute command\n");
@@ -307,6 +307,7 @@ void process_directory_processing(LinkedList *proc_list) {
         DIR* dir = opendir(path);
         if (dir == NULL) {
             break;
+            fprintf(stderr, "Failed to open directory %s\n", path);
         }
 
         puts("======================================================================================");
@@ -419,19 +420,14 @@ void save_fd_to_linked_list(char *path, int pid) {
         while (fgets(line, sizeof(line), fp) != NULL) {
             FDListNode fd_node = {0,};
             line[strlen(line) - 1] = 0;
-
-
             if (count >= 3) {
                 char *token = strtok(line, " ");
                 while (i < 10) {
                     token = strtok(NULL, " ");
                     if (i == 7) fd_node.fd = atoi(token);
                     if (i == 9) {
-                        if(strstr(token, "socket")) {
-                            find_fd_port_number(&fd_node, pid);
-                        }
-                        else
-                            strcpy(fd_node.fd_info, token);
+                        if(strstr(token, "socket")) find_fd_port_number(&fd_node, pid);
+                        else strcpy(fd_node.fd_info, token);
                     }
                     memset(port, 0, 60);
                     i++;
@@ -467,14 +463,34 @@ void find_fd_port_number(FDListNode* fd_node, int pid) {
 
     while (fgets(line, sizeof(line), fp) != NULL) {
         line[strlen(line) - 1] = 0;
-        if (strstr(line, "TCP")) port = strstr(line, "TCP");
-        if (strstr(line, "UDP")) port = strstr(line, "UDP");
-        if (strstr(line, "protocol")) port = strstr(line, "protocol");
-        if (strstr(line, "KOBJECT_UEVENT")) port = strstr(line, "KOBJECT_UEVENT");
-        if (strstr(line, "ROUTE")) port = strstr(line, "ROUTE");
-        if (strstr(line, "GENERIC")) port = strstr(line, "GENERIC");
-        if (strstr(line, "type")) port = strstr(line, "type");
-        strcpy(fd_node->fd_info, port);
+        if (strstr(line, "TCP")) {
+            port = strstr(line, "TCP");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "UDP")) {
+            port = strstr(line, "UDP");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "protocol")) {
+            port = strstr(line, "protocol");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "KOBJECT_UEVENT")) {
+            port = strstr(line, "KOBJECT_UEVENT");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "ROUTE")) {
+            port = strstr(line, "ROUTE");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "GENERIC")) {
+            port = strstr(line, "GENERIC");
+            strcpy(fd_node->fd_info, port);
+        }
+        if (strstr(line, "type")) {
+            port = strstr(line, "type");
+            strcpy(fd_node->fd_info, port);
+        }
     }
     pclose(fp);
 }
